@@ -8,3 +8,4 @@ We'd like to have a library where we could perform private set intersection over
 - Complete interoperability with other OpenMined PSI libraries, allowing you to create keys in one language and use them in another
 
 The following Paillier library seems most appropriate: https://github.com/OpenMined/paillier-pure
+The following SEAL library seems most appropriate: https://github.com/morfix-io/node-seal
