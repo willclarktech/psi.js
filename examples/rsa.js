@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const bigInt = require('big-integer')
 const psi = require('../build').default // CommonJS
 
@@ -32,7 +33,7 @@ const client = psi.protocol.rsa.client({ publicKey })
 // The client generates RF based on a maximum number of inputs the server
 // supports
 console.time('Generating random factors')
-const randomFactors = client.getRandomFactors()
+const randomFactors = client.genRandomFactors()
 console.timeEnd('Generating random factors')
 
 //////////////////
@@ -44,45 +45,53 @@ console.timeEnd('Generating random factors')
 
 // X is the server's data
 const X = range(0, 2 ** 10).map(x => bigInt(x))
-// Server signs its data to be assigned to the data-structure. Needs to be a
-// string for the bloom filter key
+
+// Create an empty filter
+console.time('Creating a filter')
+const filter = psi.dataStructure.bloomFilter.create(X.length) // length equal to our dataset, default errorRate 0.1%
+console.timeEnd('Creating a filter')
+
+// Server signs its data to be assigned to the data-structure.
 console.time('Server signing data')
-const signedData = X.map(x => server.sign(x).toString())
+X.forEach(x => {
+  const signed = server.sign(x).toString()
+  filter.add(signed)
+})
 console.timeEnd('Server signing data')
 
-// create a new bloom filter with specified length, iteratively add elements
-// const bloomFilter = psi.dataStructure.bloomFilter.create(signedData.length, 0.001) // create with capacity of 1024, errorRate 0.1%
-// signedData.forEach(x => bloomFilter.add(x))
-// Or create one from existing data set and error rate
-
-console.time('Creating bloom filter')
-const bloomFilter = psi.dataStructure.bloomFilter.from(signedData)
-console.timeEnd('Creating bloom filter')
+// Or perform separate steps
+// console.time('Server signing data')
+// const signedData = X.map(x => server.sign(x))
+// console.timeEnd('Server signing data')
+// console.time('Creating a filter')
+// const filter = psi.dataStructure.bloomFilter.from(signedData)
+// console.timeEnd('Creating a filter')
 
 //////////////////
 // ONLINE PHASE
 // 1. Create a blind from the client's data using random factors and the public key
 // 2. Send the blind to the server to be signed
-// 3. Server sends the signed blind (B) back to the client along with the dataStructure (bloomFilter)
+// 3. Server sends the signed blind (B) back to the client along with the dataStructure (filter)
 // 4. Client finds the intersection using his data (Y),
-//    the signed blind (B), the client's randomFactors, the server's dataStructure (bloomFilter),
+//    the signed blind (B), the client's randomFactors, the server's dataStructure (filter),
 //    and the public key.
 //////////////////
 // Y is the client's data
-const Y = range(0, 2 ** 10, 5).map(x => bigInt(x))
+const Y = range(0, 2 ** 10, 3).map(x => bigInt(x))
 
 // Client creates a blind (A) to be sent to the server
 console.time('Creating blind')
-const A = client.blind(Y, randomFactors)
+const A = client.blindMany(Y, randomFactors)
 console.timeEnd('Creating blind')
 // Server signs the blind (A) and returns the signature(s) to the client (B)
 console.time('Signing blind')
-const B = A.map(a => server.sign(a))
+const B = server.signMany(A)
+// const B = A.map(a => server.sign(a))
 console.timeEnd('Signing blind')
 
 // Client then finds the intersection (X_Y) of A and B
 console.time('Calculating intersection')
-const X_Y = client.intersect(Y, B, randomFactors, bloomFilter)
+const X_Y = client.intersect(Y, B, randomFactors, filter)
 console.timeEnd('Calculating intersection')
 console.log(`[${X.slice(0, 10).join(', ')} ...] - Original X`)
 console.log(`[${Y.slice(0, 10).join(', ')} ...] - Original Y`)

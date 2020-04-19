@@ -15,7 +15,8 @@ export type RsaServerOptions = {
 }
 
 export type RsaServer = {
-  readonly sign: (message: BigInteger) => BigInteger
+  readonly sign: (a: BigInteger) => BigInteger
+  readonly signMany: (A: readonly BigInteger[]) => readonly BigInteger[]
   readonly keys: KeyPair
 }
 
@@ -35,7 +36,11 @@ const getKeys = (
   }
   if (!publicKey) {
     return {
-      publicKey: forge.pki.rsa.setPublicKey(privateKey.n, privateKey.e),
+      publicKey: forge.pki.rsa.setPublicKey.call(
+        forge,
+        privateKey.n,
+        privateKey.e
+      ),
       privateKey
     }
   }
@@ -53,6 +58,11 @@ const server: RsaServerInitializer = ({
 }) => {
   const keys = getKeys(keySize, exponent, privateKey, publicKey)
 
+  /**
+   * Signs a value with the RSA private key
+   * @param a - A value to sign
+   * @returns A signed value
+   */
   const sign = (a: BigInteger): BigInteger => {
     const d = bigInt(keys.privateKey.d.toString())
     const n = bigInt(keys.privateKey.n.toString())
@@ -60,9 +70,22 @@ const server: RsaServerInitializer = ({
     return a.modPow(d, n)
   }
 
+  /**
+   * Signs many values with the RSA private key
+   * @param A An iterable of values to sign
+   * @returns An iterable of signed values
+   */
+  const signMany = (A: readonly BigInteger[]): readonly BigInteger[] => {
+    const d = bigInt(keys.privateKey.d.toString())
+    const n = bigInt(keys.privateKey.n.toString())
+    // a^d mod n
+    return A.map((a: BigInteger) => a.modPow(d, n))
+  }
+
   return {
     keys,
-    sign
+    sign,
+    signMany
   }
 }
 

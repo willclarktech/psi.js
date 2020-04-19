@@ -1,9 +1,9 @@
 import { BloomFilter } from 'bloom-filters'
-import { MAX_ELEMENTS, ERROR_RATE } from './constants'
+import { MAX_ELEMENTS, ERROR_RATE } from '../constants'
 
 export type BloomFilterDataStructure = {
   readonly create: (length: number, errorRate: number) => BloomFilter
-  readonly from: (items: Iterable<Buffer>, errorRate: number) => BloomFilter
+  readonly from: (items: Iterable<string>, errorRate: number) => BloomFilter
 }
 
 const bloomFilter: BloomFilterDataStructure = {

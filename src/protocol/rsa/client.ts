@@ -20,8 +20,9 @@ type DataStructure = {
 }
 
 export type RsaClient = {
-  readonly getRandomFactors: (maxInputs: number) => readonly RandomFactors[]
-  readonly blind: (
+  readonly genRandomFactors: (maxInputs: number) => readonly RandomFactors[]
+  readonly blind: (y: BigInteger, randomFactor: RandomFactors) => BigInteger
+  readonly blindMany: (
     Y: readonly BigInteger[],
     randomFactors: readonly RandomFactors[]
   ) => readonly BigInteger[]
@@ -40,7 +41,12 @@ const client: RsaClientInitializer = ({ publicKey }) => {
     publicKey
   }
 
-  const getRandomFactors = (
+  /**
+   * Generate an iterable of random factors
+   * @param maxInputs Maximum number of inputs the server can accept
+   * @returns An iterable of random factors
+   */
+  const genRandomFactors = (
     maxInputs = RANDOM_FACTOR_MAX_INPUTS
   ): readonly RandomFactors[] => {
     return Array.from({
@@ -58,7 +64,23 @@ const client: RsaClientInitializer = ({ publicKey }) => {
     })
   }
 
-  const blind = (
+  /**
+   * Creates a blind value
+   * @param y Client value to blind
+   * @param randomFactor A random factor
+   */
+  const blind = (y: BigInteger, randomFactor: RandomFactors): BigInteger => {
+    const n = bigInt(keys.publicKey.n.toString())
+    const { rPrime } = randomFactor
+    return y.multiply(rPrime).mod(n)
+  }
+
+  /**
+   * Creates blind values over a pair of iterables
+   * @param Y An iterable of client values to blind
+   * @param randomFactors  An iterable of random factors
+   */
+  const blindMany = (
     Y: readonly BigInteger[],
     randomFactors: readonly RandomFactors[]
   ): readonly BigInteger[] => {
@@ -72,6 +94,13 @@ const client: RsaClientInitializer = ({ publicKey }) => {
     )
   }
 
+  /**
+   * Finds the intersection between an array of values from a client and server
+   * @param Y An iterable of client values
+   * @param B An iterable of signed blinds from the server
+   * @param randomFactors An iterable of random factors
+   * @param dataStructure A data structure implementation from the server
+   */
   const intersect = (
     Y: readonly BigInteger[],
     B: readonly BigInteger[],
@@ -79,7 +108,7 @@ const client: RsaClientInitializer = ({ publicKey }) => {
     dataStructure: DataStructure
   ): readonly BigInteger[] => {
     const n = BigInt(keys.publicKey.n)
-    return B.reduce((acc: BigInteger[], b, i) => {
+    return B.reduce((acc: BigInteger[], b: BigInteger, i: number) => {
       const { rInv } = randomFactors[i]
       // b * rInv mod n
       const toCheck = b.multiply(rInv).mod(n).toString()
@@ -91,8 +120,9 @@ const client: RsaClientInitializer = ({ publicKey }) => {
   }
 
   return {
-    getRandomFactors,
+    genRandomFactors,
     blind,
+    blindMany,
     intersect
   }
 }
