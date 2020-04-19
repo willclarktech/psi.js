@@ -1,29 +1,49 @@
 # psi.js
-A Javascript library for private set intersection
+A JavaScript library for private set intersection
 
-We'd like to have a library where we could perform private set intersection over a variety of different approaches. The following features of this library are important to us:
-- Support for Paillier HME
-- Support for SEAL HME
-- Identical API for any algorithm
-- Complete interoperability with other OpenMined PSI libraries, allowing you to create keys in one language and use them in another
+## Installation
+TODO - Build an npm dist with webpack
 
-The following Paillier library seems most appropriate: https://github.com/OpenMined/paillier-pure
-The following SEAL library seems most appropriate: https://github.com/morfix-io/node-seal
+Clone the repository, then run the following:
 
-A sample API might look like such:
+`yarn build`
+`yarn demo:rsa`
 
-```js
-import psi from 'psi.js/paillier';
-// For SEAL, instead of Paillier: import psi from 'psi.js/seal';
+## Examples
 
-const { publicKey, privateKey } = await psi.generateRandomKeys(3072);
+The folder [examples](./examples) contains a local client <-> server interaction of each protocol. A true
+end-to-end demo would require a transport layer implementation which these examples omit.
 
-let a = publicKey.encrypt(3);
-let b = publicKey.enrypt(7);
+Extensive comments inside each of the examples will illustrate how a e2e implementation would look like.
+Run a specific example, such as `examples/rsa.js`, using `yarn demo:rsa`.
 
-let encryptedSum = publicKey.add(a, b);
-let sum = privateKey.decrypt(encryptedSum); // 10
+### RSA
+Demonstrates RSA Blind Signature-based PSI as described in this [paper](https://encrypto.de/papers/KLSAP17.pdf).
+Inspiration from [Python implementation](https://github.com/youben11/PSI).
 
-let encryptedProduct = publicKey.multiply(a, 6);
-let product = privateKey.decrypt(encryptedSum); // 18
+### DH
+TODO - Define DH-PSI
+
+### Paillier
+TODO - Define Paillier-PSI
+
+### SEAL
+TODO- Define SEAL-PSI
+
+## Contributing
+
+Additional implementations will reside under the `protocol` namespace, likewise a new data-structure will reside
+ under the `dataStructure` namespace.
+
 ```
+psi . protocol . rsa
+ `        `        `-- implementation (rsa, dh, etc.)
+  `        `-- layer namespace (ex: protocol, datastructure, etc.)
+   `-- our library name
+
+psi . dataStructure . bloomFilter
+ `          `              `-- implementation (bloomFilter, cuckooFilter, etc.)
+  `          `-- layer namespace (ex: protocol, dataStructure, etc.)
+   `-- our library name
+```
+
