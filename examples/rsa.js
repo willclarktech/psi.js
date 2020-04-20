@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-const bigInt = require('big-integer')
+const forge = require('node-forge')
 const psi = require('../build').default // CommonJS
 
 // Demonstration of RSA - PSI protocol
@@ -44,7 +44,7 @@ console.timeEnd('Generating random factors')
 //////////////////
 
 // X is the server's data
-const X = range(0, 2 ** 10).map(x => bigInt(x))
+const X = range(0, 2 ** 10).map(x => new forge.jsbn.BigInteger(x.toString()))
 
 // Create an empty filter
 console.time('Creating a filter')
@@ -77,7 +77,7 @@ console.timeEnd('Server signing data')
 //    and the public key.
 //////////////////
 // Y is the client's data
-const Y = range(0, 2 ** 10, 3).map(x => bigInt(x))
+const Y = range(0, 2 ** 10, 3).map(x => new forge.jsbn.BigInteger(x.toString()))
 
 // Client creates a blind (A) to be sent to the server
 console.time('Creating blind')

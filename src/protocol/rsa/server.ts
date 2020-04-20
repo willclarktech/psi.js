@@ -1,8 +1,8 @@
-import bigInt, { BigInteger } from 'big-integer'
 import forge from 'node-forge'
 
 import { EXPONENT, KEY_SIZE } from './constants'
 
+type BigInteger = forge.jsbn.BigInteger
 type PublicKey = forge.pki.rsa.PublicKey
 type PrivateKey = forge.pki.rsa.PrivateKey
 type KeyPair = forge.pki.rsa.KeyPair
@@ -22,6 +22,8 @@ export type RsaServer = {
 
 export type RsaServerInitializer = (options: RsaServerOptions) => RsaServer
 
+const { rsa } = forge.pki
+
 const getKeys = (
   keySize: number,
   exponent: number,
@@ -29,18 +31,14 @@ const getKeys = (
   publicKey?: PublicKey
 ): KeyPair => {
   if (!privateKey) {
-    return forge.pki.rsa.generateKeyPair.call(forge, {
+    return rsa.generateKeyPair({
       bits: keySize,
       e: exponent
     })
   }
   if (!publicKey) {
     return {
-      publicKey: forge.pki.rsa.setPublicKey.call(
-        forge,
-        privateKey.n,
-        privateKey.e
-      ),
+      publicKey: rsa.setPublicKey(privateKey.n, privateKey.e),
       privateKey
     }
   }
@@ -57,6 +55,7 @@ const server: RsaServerInitializer = ({
   publicKey
 }) => {
   const keys = getKeys(keySize, exponent, privateKey, publicKey)
+  const { d, n } = keys.privateKey
 
   /**
    * Signs a value with the RSA private key
@@ -64,8 +63,6 @@ const server: RsaServerInitializer = ({
    * @returns A signed value
    */
   const sign = (a: BigInteger): BigInteger => {
-    const d = bigInt(keys.privateKey.d.toString())
-    const n = bigInt(keys.privateKey.n.toString())
     // a^d mod n
     return a.modPow(d, n)
   }
@@ -76,10 +73,8 @@ const server: RsaServerInitializer = ({
    * @returns An iterable of signed values
    */
   const signMany = (A: readonly BigInteger[]): readonly BigInteger[] => {
-    const d = bigInt(keys.privateKey.d.toString())
-    const n = bigInt(keys.privateKey.n.toString())
     // a^d mod n
-    return A.map((a: BigInteger) => a.modPow(d, n))
+    return A.map(sign)
   }
 
   return {

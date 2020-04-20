@@ -1,9 +1,9 @@
-import bigInt, { BigInteger, randBetween } from 'big-integer'
 import forge from 'node-forge'
 
 import { RANDOM_FACTOR_MAX_INPUTS } from './constants'
 
-export type PublicKey = forge.pki.rsa.PublicKey
+type BigInteger = forge.jsbn.BigInteger
+type PublicKey = forge.pki.rsa.PublicKey
 
 export type RsaClientOptions = {
   readonly publicKey: PublicKey
@@ -36,11 +36,22 @@ export type RsaClient = {
 
 export type RsaClientInitializer = (options: RsaClientOptions) => RsaClient
 
-const client: RsaClientInitializer = ({ publicKey }) => {
-  const keys = {
-    publicKey
+const BigInteger = forge.jsbn.BigInteger
+
+const randBetween = (max: BigInteger, min = BigInteger.ZERO): BigInteger => {
+  const range = max.subtract(min)
+  const numBytes = range.toByteArray().length
+  const randomBytes = Buffer.from(forge.random.getBytesSync(numBytes), 'latin1')
+  const n = new BigInteger(randomBytes).abs()
+
+  if (n.compareTo(range) > 0) {
+    return randBetween(max, min)
   }
 
+  return n.add(min)
+}
+
+const client: RsaClientInitializer = ({ publicKey: { n, e } }) => {
   /**
    * Generate an iterable of random factors
    * @param maxInputs Maximum number of inputs the server can accept
@@ -52,12 +63,10 @@ const client: RsaClientInitializer = ({ publicKey }) => {
     return Array.from({
       length: maxInputs
     }).map(() => {
-      const n = BigInt(keys.publicKey.n)
-      const e = BigInt(keys.publicKey.e)
       // TODO: ensure this is a CSPRNG
-      const r = randBetween(0, n)
+      const r = randBetween(n)
       // r^-1 mod n
-      const rInv = r.modInv(n)
+      const rInv = r.modInverse(n)
       // r^e mod n
       const rPrime = r.modPow(e, n)
       return { rInv, rPrime }
@@ -70,7 +79,6 @@ const client: RsaClientInitializer = ({ publicKey }) => {
    * @param randomFactor A random factor
    */
   const blind = (y: BigInteger, randomFactor: RandomFactors): BigInteger => {
-    const n = bigInt(keys.publicKey.n.toString())
     const { rPrime } = randomFactor
     return y.multiply(rPrime).mod(n)
   }
@@ -84,7 +92,6 @@ const client: RsaClientInitializer = ({ publicKey }) => {
     Y: readonly BigInteger[],
     randomFactors: readonly RandomFactors[]
   ): readonly BigInteger[] => {
-    const n = bigInt(keys.publicKey.n.toString())
     return Y.map(
       (y: BigInteger, i: number): BigInteger => {
         const { rPrime } = randomFactors[i]
@@ -107,7 +114,6 @@ const client: RsaClientInitializer = ({ publicKey }) => {
     randomFactors: readonly RandomFactors[],
     dataStructure: DataStructure
   ): readonly BigInteger[] => {
-    const n = BigInt(keys.publicKey.n)
     return B.reduce((acc: BigInteger[], b: BigInteger, i: number) => {
       const { rInv } = randomFactors[i]
       // b * rInv mod n
