@@ -1,15 +1,24 @@
 import { BloomFilter } from 'bloom-filters'
-import { MAX_ELEMENTS, ERROR_RATE } from '../constants'
+import { MAX_ELEMENTS, FALSE_POSITIVE_PROBABILITY } from '../constants'
 
 export type BloomFilterDataStructure = {
-  readonly create: (length: number, errorRate: number) => BloomFilter
-  readonly from: (items: Iterable<string>, errorRate: number) => BloomFilter
+  readonly create: (
+    capacity: number,
+    falsePositiveProbability: number
+  ) => BloomFilter
+  readonly from: (
+    items: Iterable<string>,
+    falsePositiveProbability: number
+  ) => BloomFilter
 }
 
 const bloomFilter: BloomFilterDataStructure = {
-  create: (length = MAX_ELEMENTS, errorRate = ERROR_RATE) =>
-    BloomFilter.create(length, errorRate),
-  from: (items, errorRate = ERROR_RATE) => BloomFilter.from(items, errorRate)
+  create: (
+    capacity = MAX_ELEMENTS,
+    falsePositiveProbability = FALSE_POSITIVE_PROBABILITY
+  ) => BloomFilter.create(capacity, falsePositiveProbability),
+  from: (items, falsePositiveProbability = FALSE_POSITIVE_PROBABILITY) =>
+    BloomFilter.from(items, falsePositiveProbability)
 }
 
 export default bloomFilter
