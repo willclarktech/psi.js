@@ -55,7 +55,8 @@ const bloomFilter: BloomFilterDataStructure = {
 
     const getHashes = (element: string): readonly number[] => {
       const [h1, h2] = NONCES.map(getHash.bind(null, element, bitLength))
-      return [...new Array(numHashFunctions)].map(
+      return Array.from(
+        { length: numHashFunctions },
         (_, i) => h1 + ((i * h2) % bitLength)
       )
     }
