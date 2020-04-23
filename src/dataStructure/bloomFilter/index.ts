@@ -36,12 +36,7 @@ const getBitLength = (
 
 const getHash = (element: string, bitLength: number, nonce: number): number => {
   const hashObject = sha256.create()
-  hashObject.update(
-    Buffer.concat([
-      Buffer.from([nonce]),
-      Buffer.from(element, 'latin1')
-    ]).toString('latin1')
-  )
+  hashObject.update(`${String.fromCharCode(nonce)}${element}`)
   const rawHash = hashObject.digest().toHex()
   const bigIntHash = bigInt(rawHash, 16)
   // Non-uniformity is negligible for Bloom filters of reasonable size
