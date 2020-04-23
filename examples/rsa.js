@@ -54,8 +54,8 @@ console.timeEnd('Creating a filter')
 // Server signs its data to be assigned to the data-structure.
 console.time('Server signing data')
 X.forEach(x => {
-  const signed = server.sign(x).toString()
-  filter.add(signed)
+  const signed = server.sign(x)
+  filter.add(signed.toString())
 })
 console.timeEnd('Server signing data')
 
@@ -64,7 +64,7 @@ console.timeEnd('Server signing data')
 // const signedData = X.map(x => server.sign(x))
 // console.timeEnd('Server signing data')
 // console.time('Creating a filter')
-// const filter = psi.dataStructure.bloomFilter.from(signedData)
+// const filter = psi.dataStructure.bloomFilter.from(signedData.map(d => d.toString()))
 // console.timeEnd('Creating a filter')
 
 //////////////////
