@@ -20,7 +20,8 @@
     "rootDir": "src",
     "sourceMap": true,
     "strict": true,
-    "target": "es6"
+    "target": "es6",
+    "typeRoots": ["custom-types", "node_modules/@types"]
   },
   "include": ["src/**/*"]
 }

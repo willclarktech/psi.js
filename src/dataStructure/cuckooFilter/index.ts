@@ -1,16 +1,21 @@
 import { CuckooFilter } from 'bloom-filters'
-import { MAX_ELEMENTS, ERROR_RATE, BUCKET_SIZE, MAX_KICKS } from '../constants'
+import {
+  MAX_ELEMENTS,
+  FALSE_POSITIVE_PROBABILITY,
+  BUCKET_SIZE,
+  MAX_KICKS
+} from '../constants'
 
 export type CuckooFilterDataStructure = {
   readonly create: (
-    size: number,
-    errorRate: number,
+    capacity: number,
+    falsePositiveProbability: number,
     bucketSize?: number,
     maxKicks?: number
   ) => CuckooFilter
   readonly from: (
     items: Iterable<string>,
-    errorRate: number,
+    falsePositiveProbability: number,
     bucketSize?: number,
     maxKicks?: number
   ) => CuckooFilter
@@ -18,17 +23,23 @@ export type CuckooFilterDataStructure = {
 
 const cuckooFilter: CuckooFilterDataStructure = {
   create: (
-    size = MAX_ELEMENTS,
-    errorRate = ERROR_RATE,
+    capacity = MAX_ELEMENTS,
+    falsePositiveProbability = FALSE_POSITIVE_PROBABILITY,
     bucketSize = BUCKET_SIZE,
     maxKicks = MAX_KICKS
-  ) => CuckooFilter.create(size, errorRate, bucketSize, maxKicks),
+  ) =>
+    CuckooFilter.create(
+      capacity,
+      falsePositiveProbability,
+      bucketSize,
+      maxKicks
+    ),
   from: (
     items,
-    errorRate = ERROR_RATE,
+    falsePositiveProbability = FALSE_POSITIVE_PROBABILITY,
     bucketSize = BUCKET_SIZE,
     maxKicks = MAX_KICKS
-  ) => CuckooFilter.from(items, errorRate, bucketSize, maxKicks)
+  ) => CuckooFilter.from(items, falsePositiveProbability, bucketSize, maxKicks)
 }
 
 export default cuckooFilter
