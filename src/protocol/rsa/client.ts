@@ -1,6 +1,7 @@
 import bigInt, { BigInteger, randBetween } from 'big-integer'
 import forge from 'node-forge'
 
+import { DataStructure } from '../../dataStructure'
 import { RANDOM_FACTOR_MAX_INPUTS } from './constants'
 
 export type PublicKey = forge.pki.rsa.PublicKey
@@ -12,11 +13,6 @@ export type RsaClientOptions = {
 type RandomFactors = {
   readonly rInv: BigInteger
   readonly rPrime: BigInteger
-}
-
-type DataStructure = {
-  readonly add: (element: string) => void
-  readonly has: (element: string) => boolean
 }
 
 export type RsaClient = {

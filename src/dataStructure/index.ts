@@ -1,12 +1,15 @@
-import bloomFilter, { BloomFilterDataStructure } from './bloomFilter'
-import cuckooFilter, { CuckooFilterDataStructure } from './cuckooFilter'
+import bloomFilter from './bloomFilter'
+import cuckooFilter from './cuckooFilter'
+import { DataStructureCreator } from './constants'
 
-export type DataStructure = {
-  readonly bloomFilter: BloomFilterDataStructure
-  readonly cuckooFilter: CuckooFilterDataStructure
+export { DataStructure } from './constants'
+
+export type DataStructureModule = {
+  readonly bloomFilter: DataStructureCreator
+  readonly cuckooFilter: DataStructureCreator
 }
 
-const dataStructure: DataStructure = {
+const dataStructure: DataStructureModule = {
   bloomFilter,
   cuckooFilter
 }

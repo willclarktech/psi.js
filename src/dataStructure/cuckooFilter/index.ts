@@ -1,27 +1,13 @@
 import { CuckooFilter } from 'bloom-filters'
 import {
+  DataStructureCreator,
   MAX_ELEMENTS,
   FALSE_POSITIVE_PROBABILITY,
   BUCKET_SIZE,
   MAX_KICKS
 } from '../constants'
 
-export type CuckooFilterDataStructure = {
-  readonly create: (
-    capacity: number,
-    falsePositiveProbability: number,
-    bucketSize?: number,
-    maxKicks?: number
-  ) => CuckooFilter
-  readonly from: (
-    items: Iterable<string>,
-    falsePositiveProbability: number,
-    bucketSize?: number,
-    maxKicks?: number
-  ) => CuckooFilter
-}
-
-const cuckooFilter: CuckooFilterDataStructure = {
+const cuckooFilter: DataStructureCreator = {
   create: (
     capacity = MAX_ELEMENTS,
     falsePositiveProbability = FALSE_POSITIVE_PROBABILITY,
