@@ -1,8 +1,8 @@
-import dataStructure, { DataStructure } from './dataStructure'
+import dataStructure, { DataStructureModule } from './dataStructure'
 import protocol, { Protocol } from './protocol'
 
 export type Psi = {
-  readonly dataStructure: DataStructure
+  readonly dataStructure: DataStructureModule
   readonly protocol: Protocol
 }
 

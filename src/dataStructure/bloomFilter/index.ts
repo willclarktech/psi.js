@@ -1,23 +1,11 @@
 import bigInt from 'big-integer'
 import BitArray from 'node-bitarray'
 import forge from 'node-forge'
-import { MAX_ELEMENTS, FALSE_POSITIVE_PROBABILITY } from '../constants'
-
-export type BloomFilter = {
-  readonly add: (element: string) => void
-  readonly has: (element: string) => boolean
-}
-
-export type BloomFilterDataStructure = {
-  readonly create: (
-    capacity: number,
-    falsePositiveProbability: number
-  ) => BloomFilter
-  readonly from: (
-    items: readonly string[],
-    falsePositiveProbability: number
-  ) => BloomFilter
-}
+import {
+  DataStructureCreator,
+  MAX_ELEMENTS,
+  FALSE_POSITIVE_PROBABILITY
+} from '../constants'
 
 const { sha256 } = forge.md
 
@@ -43,7 +31,7 @@ const getHash = (element: string, bitLength: number, nonce: number): number => {
   return bigIntHash.mod(bitLength).toJSNumber()
 }
 
-const bloomFilter: BloomFilterDataStructure = {
+const bloomFilter: DataStructureCreator = {
   create: (
     capacity = MAX_ELEMENTS,
     falsePositiveProbability = FALSE_POSITIVE_PROBABILITY
